@@ -8,7 +8,7 @@ export type TailwindPluginProps = {
 
 declare global {
   var __BUN_TAILWIND_PLUGIN_CHILD_PROCESS__:
-    | Bun.Subprocess<"ignore", "inherit", "inherit">
+    | Bun.Subprocess<"ignore", "ignore", "inherit">
     | undefined;
 }
 
@@ -18,7 +18,7 @@ export default function createPlugin({
 }: TailwindPluginProps): FrameMasterPlugin {
   const spawn = () => {
     if (globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__) return;
-    __BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = Bun.spawn({
+    globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = Bun.spawn({
       cmd: [
         "bunx",
         "@tailwindcss/cli",
@@ -28,8 +28,9 @@ export default function createPlugin({
         outputFile,
         "--watch",
       ],
-      stdout: "inherit",
+      stdout: "ignore",
       stderr: "inherit",
+      stdin: "ignore",
     });
   };
 
@@ -37,7 +38,7 @@ export default function createPlugin({
     name: "tailwind-plugin",
     serverStart: {
       dev_main() {
-        const subProcess = globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__;
+        const subProcess = globalThis?.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__;
         if (!subProcess || subProcess.exitCode !== null) {
           spawn();
         }
