@@ -44,6 +44,18 @@ export default function createPlugin({
         }
       },
     },
+    router: {
+      request(req) {
+        if (req.URL.pathname != "/tailwind.css") return;
+        req
+          .setResponse(Bun.file(outputFile), {
+            headers: {
+              "Content-Type": "text/css",
+            },
+          })
+          .sendNow();
+      },
+    },
   };
 }
 
