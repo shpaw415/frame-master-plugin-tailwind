@@ -39,21 +39,30 @@ export default function createPlugin({
     serverStart: {
       dev_main() {
         const subProcess = globalThis?.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__;
-        if (!subProcess || subProcess.exitCode !== null) {
-          spawn();
-        }
+        if (!subProcess || subProcess.exitCode !== null) spawn();
       },
     },
     router: {
       request(req) {
-        if (req.URL.pathname != "/tailwind.css") return;
-        req
-          .setResponse(Bun.file(outputFile), {
-            headers: {
-              "Content-Type": "text/css",
+        if (req.URL.pathname == "/tailwind.css")
+          req
+            .setResponse(Bun.file(outputFile), {
+              headers: {
+                "Content-Type": "text/css",
+              },
+            })
+            .sendNow();
+      },
+      html_rewrite: {
+        rewrite(reWriter, request, context) {
+          reWriter.on("head", {
+            element(element) {
+              element.append(`<link href="/tailwind.css" rel="stylesheet">`, {
+                html: true,
+              });
             },
-          })
-          .sendNow();
+          });
+        },
       },
     },
   };
