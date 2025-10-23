@@ -17,6 +17,7 @@ declare global {
 
 globalThis.__SOCKETS_TAILWIND__ ??= [];
 
+/** This plugin add TailwindCss to your project and  */
 export default function createPlugin({
   inputFile,
   outputFile,
@@ -43,6 +44,7 @@ export default function createPlugin({
 
   return {
     name: "tailwind-plugin",
+    version: PackageJson.version,
     serverStart: {
       dev_main() {
         const subProcess = globalThis?.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__;
@@ -61,6 +63,8 @@ export default function createPlugin({
     serverConfig: {
       routes: {
         "/ws/tailwind": (req, server) => {
+          if (process.env.NODE_ENV == "production")
+            return new Response("Not Found", { status: 404 });
           const success = server.upgrade(req, {
             data: {
               tailwind: true,
@@ -115,9 +119,7 @@ export default function createPlugin({
     onFileSystemChange(eventType, filePath, absolutePath) {
       globalThis.__SOCKETS_TAILWIND__
         .filter((w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind)
-        .forEach((ws) => {
-          ws.send("reload");
-        });
+        .forEach((ws) => ws.send("reload"));
     },
     fileSystemWatchDir: watch,
   };

@@ -9,10 +9,10 @@
       },
       "devDependencies": {
         "@types/bun": "latest",
-        "frame-master": "https://github.com/shpaw415/frame-master.git#e6081c4",
+        "frame-master": "https://github.com/shpaw415/frame-master.git#0ce1ad1",
       },
       "peerDependencies": {
-        "frame-master": "https://github.com/shpaw415/frame-master.git#e6081c4",
+        "frame-master": "https://github.com/shpaw415/frame-master.git#0ce1ad1",
         "typescript": "^5",
       },
     },
@@ -115,7 +115,7 @@
 
     "fill-range": ["fill-range@7.1.1", "", { "dependencies": { "to-regex-range": "^5.0.1" } }, "sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg=="],
 
-    "frame-master": ["frame-master@github:shpaw415/frame-master#e6081c4", { "dependencies": { "@shpaw415/webtoken": "^1.0.0", "@types/react-dom": "^19.2.1", "chalk": "^5.6.2", "commander": "^14.0.1", "react": "19.2.0", "react-dom": "19.2.0" }, "peerDependencies": { "typescript": "^5.9.3" }, "bin": { "frame-master": "bin/index.ts" } }, "shpaw415-frame-master-e6081c4"],
+    "frame-master": ["frame-master@github:shpaw415/frame-master#0ce1ad1", { "dependencies": { "@shpaw415/webtoken": "^1.0.0", "@types/react-dom": "^19.2.1", "chalk": "^5.6.2", "commander": "^14.0.1", "react": "19.2.0", "react-dom": "19.2.0" }, "peerDependencies": { "typescript": "^5.9.3" }, "bin": { "frame-master": "bin/index.ts" } }, "shpaw415-frame-master-0ce1ad1"],
 
     "graceful-fs": ["graceful-fs@4.2.11", "", {}, "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="],
 
