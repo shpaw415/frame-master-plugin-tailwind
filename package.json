@@ -8,8 +8,13 @@
   },
   "peerDependencies": {
     "typescript": "^5",
-    "frame-master": "https://github.com/shpaw415/frame-master.git#2d04b14",
-    "tailwindcss": "*",
-    "bun-plugin-tailwind": "^0.1.2"
-  }
+    "frame-master": "https://github.com/shpaw415/frame-master.git#2d04b14"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.15",
+    "tailwindcss": "^4.1.15"
+  },
+  "trustedDependencies": [
+    "@parcel/watcher"
+  ]
 }
