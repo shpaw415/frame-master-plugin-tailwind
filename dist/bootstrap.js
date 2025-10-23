@@ -1,0 +1,1 @@
+var e=new WebSocket("ws://"+location.host+"/ws/tailwind"),s=document.getElementById("__tailwindcss__");e.addEventListener("message",(t)=>{if(t.data==="reload")s?.setAttribute("href","/tailwind.css?t="+Date.now())});

@@ -1,21 +1,27 @@
 import { type FrameMasterPlugin } from "frame-master/plugin";
-import BunTailwindPlugin from "bun-plugin-tailwind";
+import PackageJson from "./package.json";
+import { join } from "path";
 
 export type TailwindPluginProps = {
   inputFile: string;
   outputFile: string;
+  watch: string[];
 };
 
 declare global {
   var __BUN_TAILWIND_PLUGIN_CHILD_PROCESS__:
-    | Bun.Subprocess<"ignore", "ignore", "inherit">
+    | Bun.Subprocess<"ignore", null, null>
     | undefined;
+  var __SOCKETS_TAILWIND__: Bun.ServerWebSocket[];
 }
+
+globalThis.__SOCKETS_TAILWIND__ ??= [];
 
 export default function createPlugin({
   inputFile,
   outputFile,
-}: TailwindPluginProps): FrameMasterPlugin {
+  watch,
+}: TailwindPluginProps): FrameMasterPlugin<any> {
   const spawn = () => {
     if (globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__) return;
     globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = Bun.spawn({
@@ -27,9 +33,10 @@ export default function createPlugin({
         "-o",
         outputFile,
         "--watch",
+        "always",
       ],
-      stdout: "ignore",
-      stderr: "inherit",
+      stdout: null,
+      stderr: null,
       stdin: "ignore",
     });
   };
@@ -42,30 +49,76 @@ export default function createPlugin({
         if (!subProcess || subProcess.exitCode !== null) spawn();
       },
     },
-    router: {
-      request(req) {
-        if (req.URL.pathname == "/tailwind.css")
-          req
-            .setResponse(Bun.file(outputFile), {
-              headers: {
-                "Content-Type": "text/css",
-              },
-            })
-            .sendNow();
+    websocket: {
+      onOpen(ws) {
+        globalThis.__SOCKETS_TAILWIND__.push(ws);
       },
+      onClose(ws) {
+        globalThis.__SOCKETS_TAILWIND__ =
+          globalThis.__SOCKETS_TAILWIND__.filter((socket) => socket !== ws);
+      },
+    },
+    serverConfig: {
+      routes: {
+        "/ws/tailwind": (req, server) => {
+          const success = server.upgrade(req, {
+            data: {
+              tailwind: true,
+            } as any,
+          });
+          return new Response(success ? "welcome to tailwind ws" : undefined, {
+            status: success ? 101 : 400,
+          });
+        },
+        "/tailwind.css": (req) =>
+          new Response(Bun.file(outputFile), {
+            headers: {
+              "Content-Type": "text/css",
+            },
+          }),
+        "/tailwind/bootstrap.js": (req) =>
+          new Response(
+            Bun.file(
+              join("node_modules", PackageJson.name, "dist", "bootstrap.js")
+            ).stream(),
+            {
+              headers: {
+                "Content-Type": "application/javascript",
+              },
+            }
+          ),
+      },
+    },
+    router: {
       html_rewrite: {
         rewrite(reWriter, request, context) {
           reWriter.on("head", {
             element(element) {
-              element.append(`<link href="/tailwind.css" rel="stylesheet">`, {
-                html: true,
-              });
+              element.append(
+                `<link href="/tailwind.css" rel="stylesheet" id="__tailwindcss__">`,
+                {
+                  html: true,
+                }
+              );
+              if (process.env.NODE_ENV != "production")
+                element.append(
+                  `<script src="/tailwind/bootstrap.js"></script>`,
+                  {
+                    html: true,
+                  }
+                );
             },
           });
         },
       },
     },
+    onFileSystemChange(eventType, filePath, absolutePath) {
+      globalThis.__SOCKETS_TAILWIND__
+        .filter((w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind)
+        .forEach((ws) => {
+          ws.send("reload");
+        });
+    },
+    fileSystemWatchDir: watch,
   };
 }
-
-export const TailwindPlugin = BunTailwindPlugin;
