@@ -9,7 +9,6 @@ A powerful Tailwind CSS integration plugin for Frame-Master, providing automatic
 - **🔥 Hot Module Replacement** - Live CSS reload without page refresh
 - **📦 Zero Config** - Works out of the box with sensible defaults
 - **🌐 WebSocket Integration** - Real-time CSS updates via WebSocket
-- **🔧 File Watching** - Watches specified directories for changes
 - **🚀 Production Ready** - Optimized builds for production deployment
 
 ## 📦 Installation
@@ -37,7 +36,6 @@ export default {
     TailwindPlugin({
       inputFile: "static/index.css", // Your Tailwind input file
       outputFile: "static/tailwind.css", // Compiled output file
-      watch: ["src/pages", "static"], // Directories to watch for changes
     }),
   ],
 } satisfies FrameMasterConfig;
@@ -102,7 +100,6 @@ The plugin will:
 type TailwindPluginProps = {
   inputFile: string; // Path to your Tailwind input CSS file
   outputFile: string; // Path where compiled CSS will be output
-  watch: string[]; // Array of directories to watch for changes
 };
 ```
 
@@ -114,17 +111,6 @@ type TailwindPluginProps = {
 TailwindPlugin({
   inputFile: "static/index.css",
   outputFile: "static/tailwind.css",
-  watch: ["src"],
-});
-```
-
-**Multi-Directory Watching:**
-
-```typescript
-TailwindPlugin({
-  inputFile: "static/styles/main.css",
-  outputFile: "static/dist/styles.css",
-  watch: ["src/pages", "src/components", "static", "public"],
 });
 ```
 
@@ -134,7 +120,6 @@ TailwindPlugin({
 TailwindPlugin({
   inputFile: "apps/web/styles/index.css",
   outputFile: "apps/web/public/tailwind.css",
-  watch: ["apps/web/src", "packages/ui/src"],
 });
 ```
 
@@ -161,20 +146,6 @@ In development mode, the plugin establishes a WebSocket connection for instant C
 - **Endpoint:** `ws://localhost:3000/ws/tailwind`
 - **Message:** Sends `"reload"` when CSS changes are detected
 - **Behavior:** Automatically refreshes the CSS without page reload
-
-### File System Watching
-
-The plugin monitors specified directories and triggers CSS recompilation on file changes:
-
-```typescript
-watch: ["src/pages", "src/components", "static"];
-```
-
-Any changes to files in these directories will:
-
-1. Trigger Tailwind CSS recompilation
-2. Notify connected WebSocket clients
-3. Auto-reload the CSS in the browser
 
 ### Routes
 
@@ -276,10 +247,9 @@ The plugin automatically optimizes for production:
 
 **Solution:**
 
-1. Check that directories are in the `watch` array
-2. Verify WebSocket connection in browser DevTools (Network tab)
-3. Clear browser cache
-4. Restart the development server
+1. Verify WebSocket connection in browser DevTools (Network tab)
+2. Clear browser cache
+3. Restart the development server
 
 ### WebSocket Connection Failed
 
@@ -322,7 +292,6 @@ function TailwindPlugin(options: TailwindPluginProps): FrameMasterPlugin;
 type TailwindPluginProps = {
   inputFile: string; // Path to Tailwind input CSS
   outputFile: string; // Path for compiled CSS output
-  watch: string[]; // Directories to watch for changes
 };
 ```
 
@@ -353,7 +322,6 @@ export default {
     TailwindPlugin({
       inputFile: "static/index.css",
       outputFile: "static/tailwind.css",
-      watch: ["src/pages", "src/components"],
     }),
   ],
 } satisfies FrameMasterConfig;
@@ -372,7 +340,6 @@ export default {
     TailwindPlugin({
       inputFile: "static/index.css",
       outputFile: "static/tailwind.css",
-      watch: ["src"],
     }),
   ],
 } satisfies FrameMasterConfig;
@@ -381,10 +348,9 @@ export default {
 ## 📝 Best Practices
 
 1. **Keep Input CSS Minimal** - Use `@import "tailwindcss"` and custom layers
-2. **Watch Relevant Directories** - Only watch directories with HTML/JSX/TSX files
-3. **Use Tailwind Classes** - Leverage utility classes instead of custom CSS
-4. **Organize Styles** - Use `@layer` for custom components and utilities
-5. **Production Builds** - Let Tailwind automatically purge unused CSS
+2. **Use Tailwind Classes** - Leverage utility classes instead of custom CSS
+3. **Organize Styles** - Use `@layer` for custom components and utilities
+4. **Production Builds** - Let Tailwind automatically purge unused CSS
 
 ## 🔗 Links
 
