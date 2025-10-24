@@ -95,7 +95,7 @@ export default function createPlugin({
     },
     router: {
       html_rewrite: {
-        rewrite(reWriter, request, context) {
+        rewrite(reWriter) {
           reWriter.on("head", {
             element(element) {
               element.append(
