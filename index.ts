@@ -26,14 +26,19 @@ export default function createPlugin({
     version: PackageJson.version,
     serverStart: {
       dev_main() {
-        globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ ??= Bun.spawn({
-          cmd: `bunx @tailwindcss/cli -i ${inputFile} -o ${outputFile} --watch always`.split(
-            " "
-          ),
-          stdout: null,
-          stderr: null,
-          stdin: "ignore",
-        });
+        const spawn = () =>
+          Bun.spawn({
+            cmd: `bunx @tailwindcss/cli -i ${inputFile} -o ${outputFile} --watch always`.split(
+              " "
+            ),
+            stdout: null,
+            stderr: null,
+            stdin: "ignore",
+            onExit() {
+              globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = spawn();
+            },
+          });
+        globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ ??= spawn();
       },
     },
     websocket: {
