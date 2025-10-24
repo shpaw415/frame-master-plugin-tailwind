@@ -23,34 +23,9 @@ export default function createPlugin({
   outputFile,
   watch,
 }: TailwindPluginProps): FrameMasterPlugin<any> {
-  const spawn = () => {
-    if (globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__) return;
-    globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = Bun.spawn({
-      cmd: [
-        "bunx",
-        "@tailwindcss/cli",
-        "-i",
-        inputFile,
-        "-o",
-        outputFile,
-        "--watch",
-        "always",
-      ],
-      stdout: null,
-      stderr: null,
-      stdin: "ignore",
-    });
-  };
-
   return {
     name: "tailwind-plugin",
     version: PackageJson.version,
-    serverStart: {
-      dev_main() {
-        const subProcess = globalThis?.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__;
-        if (!subProcess || subProcess.exitCode !== null) spawn();
-      },
-    },
     websocket: {
       onOpen(ws) {
         globalThis.__SOCKETS_TAILWIND__.push(ws);
@@ -62,18 +37,21 @@ export default function createPlugin({
     },
     serverConfig: {
       routes: {
-        "/ws/tailwind": (req, server) => {
-          if (process.env.NODE_ENV == "production")
-            return new Response("Not Found", { status: 404 });
-          const success = server.upgrade(req, {
-            data: {
-              tailwind: true,
-            } as any,
-          });
-          return new Response(success ? "welcome to tailwind ws" : undefined, {
-            status: success ? 101 : 400,
-          });
-        },
+        ...(process.env.NODE_ENV != "production" && {
+          "/ws/tailwind": (req, server) => {
+            const success = server.upgrade(req, {
+              data: {
+                tailwind: true,
+              } as any,
+            });
+            return new Response(
+              success ? "welcome to tailwind ws" : undefined,
+              {
+                status: success ? 101 : 400,
+              }
+            );
+          },
+        }),
         "/tailwind.css": (req) =>
           new Response(Bun.file(outputFile), {
             headers: {
@@ -117,9 +95,20 @@ export default function createPlugin({
       },
     },
     onFileSystemChange(eventType, filePath, absolutePath) {
-      globalThis.__SOCKETS_TAILWIND__
-        .filter((w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind)
-        .forEach((ws) => ws.send("reload"));
+      Bun.$`bunx @tailwindcss/cli -i ${inputFile} -o ${outputFile}`
+        .quiet()
+        .then(
+          () => {
+            globalThis.__SOCKETS_TAILWIND__
+              .filter(
+                (w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind
+              )
+              .forEach((ws) => ws.send("reload"));
+          },
+          (e) => {
+            throw new Error("Error while running Tailwind CLI:", { cause: e });
+          }
+        );
     },
     fileSystemWatchDir: watch,
   };
