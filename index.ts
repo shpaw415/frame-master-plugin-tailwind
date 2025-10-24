@@ -1,11 +1,10 @@
 import { type FrameMasterPlugin } from "frame-master/plugin";
 import PackageJson from "./package.json";
-import { join } from "path";
+import path, { join } from "path";
 
 export type TailwindPluginProps = {
   inputFile: string;
   outputFile: string;
-  watch: string[];
 };
 
 declare global {
@@ -21,11 +20,22 @@ globalThis.__SOCKETS_TAILWIND__ ??= [];
 export default function createPlugin({
   inputFile,
   outputFile,
-  watch,
 }: TailwindPluginProps): FrameMasterPlugin<any> {
   return {
     name: "tailwind-plugin",
     version: PackageJson.version,
+    serverStart: {
+      dev_main() {
+        globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ ??= Bun.spawn({
+          cmd: `bunx @tailwindcss/cli -i ${inputFile} -o ${outputFile} --watch always`.split(
+            " "
+          ),
+          stdout: null,
+          stderr: null,
+          stdin: "ignore",
+        });
+      },
+    },
     websocket: {
       onOpen(ws) {
         globalThis.__SOCKETS_TAILWIND__.push(ws);
@@ -95,21 +105,11 @@ export default function createPlugin({
       },
     },
     onFileSystemChange(eventType, filePath, absolutePath) {
-      Bun.$`bunx @tailwindcss/cli -i ${inputFile} -o ${outputFile}`
-        .quiet()
-        .then(
-          () => {
-            globalThis.__SOCKETS_TAILWIND__
-              .filter(
-                (w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind
-              )
-              .forEach((ws) => ws.send("reload"));
-          },
-          (e) => {
-            throw new Error("Error while running Tailwind CLI:", { cause: e });
-          }
-        );
+      if (absolutePath != outputFile) return;
+      globalThis.__SOCKETS_TAILWIND__
+        .filter((w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind)
+        .forEach((ws) => ws.send("reload"));
     },
-    fileSystemWatchDir: watch,
+    fileSystemWatchDir: [join(...outputFile.split(path.sep).slice(0, -1))],
   };
 }
