@@ -5,7 +5,7 @@
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
-    "frame-master": "https://github.com/shpaw415/frame-master.git#0ce1ad1"
+    "frame-master": "link:frame-master"
   },
   "peerDependencies": {
     "typescript": "^5",
