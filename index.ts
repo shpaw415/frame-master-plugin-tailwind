@@ -44,7 +44,8 @@ async function spawn(inputFile: string, outputFile: string) {
     stdout: null,
     stderr: "pipe",
     onExit(proc, exitCode) {
-      if (exitCode == 0) return;
+      if (exitCode == 0)
+        return console.log("Tailwind CSS process exited normally.");
       console.error("Tailwind CSS process exited with code:", exitCode);
       exit(1);
     },

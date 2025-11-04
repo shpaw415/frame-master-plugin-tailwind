@@ -1,7 +1,7 @@
 {
   "name": "frame-master-plugin-tailwind",
   "module": "index.ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
@@ -10,9 +10,7 @@
   "peerDependencies": {
     "typescript": "^5",
     "frame-master": "^2.0.0",
-    "tailwindcss": "^4.1.15"
-  },
-  "dependencies": {
+    "tailwindcss": "^4.1.15",
     "@tailwindcss/cli": "^4.1.15"
   },
   "trustedDependencies": [
