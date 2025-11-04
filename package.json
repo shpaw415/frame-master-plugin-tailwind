@@ -9,11 +9,11 @@
   },
   "peerDependencies": {
     "typescript": "^5",
-    "frame-master": "https://github.com/shpaw415/frame-master.git#0ce1ad1"
+    "frame-master": "^2.0.0",
+    "tailwindcss": "^4.1.15"
   },
   "dependencies": {
-    "@tailwindcss/cli": "^4.1.15",
-    "tailwindcss": "^4.1.15"
+    "@tailwindcss/cli": "^4.1.15"
   },
   "trustedDependencies": [
     "@parcel/watcher"

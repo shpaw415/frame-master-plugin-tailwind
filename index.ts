@@ -1,6 +1,7 @@
 import { type FrameMasterPlugin } from "frame-master/plugin";
 import PackageJson from "./package.json";
 import path, { join } from "path";
+import { exit } from "process";
 
 export type TailwindPluginProps = {
   inputFile: string;
@@ -16,6 +17,49 @@ declare global {
 
 globalThis.__SOCKETS_TAILWIND__ ??= [];
 
+async function spawn(inputFile: string, outputFile: string) {
+  const proc = Bun.spawn({
+    cmd: [
+      "bunx",
+      "@tailwindcss/cli",
+      "-i",
+      inputFile,
+      "-o",
+      outputFile,
+      "--watch",
+      "always",
+    ],
+    stdin: "ignore",
+    stdout: null,
+    stderr: "pipe",
+    onExit(proc, exitCode) {
+      console.error("Tailwind CSS process exited with code:", exitCode);
+      exit(1);
+    },
+  });
+  const decoder = new TextDecoder();
+  for await (const chunk of proc.stderr) {
+    const str = decoder.decode(chunk);
+    if (!str.includes("Error")) continue;
+    console.error("Tailwind CSS Error:", str);
+    console.log("Make sure you have tailwindcss installed.");
+  }
+}
+
+function spawnProduction(inputFile: string, outputFile: string) {
+  Bun.spawn({
+    cmd: [
+      "bunx",
+      "@tailwindcss/cli",
+      "-i",
+      inputFile,
+      "-o",
+      outputFile,
+      "--minify",
+    ],
+  });
+}
+
 /** This plugin add TailwindCss to your project and  */
 export default function createPlugin({
   inputFile,
@@ -26,19 +70,11 @@ export default function createPlugin({
     version: PackageJson.version,
     serverStart: {
       dev_main() {
-        const spawn = () =>
-          Bun.spawn({
-            cmd: `bunx @tailwindcss/cli -i ${inputFile} -o ${outputFile} --watch always`.split(
-              " "
-            ),
-            stdout: null,
-            stderr: null,
-            stdin: "ignore",
-            onExit() {
-              globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = spawn();
-            },
-          });
-        globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ ??= spawn();
+        spawn(inputFile, outputFile);
+      },
+      main() {
+        if (process.env.NODE_ENV == "production")
+          spawnProduction(inputFile, outputFile);
       },
     },
     websocket: {
@@ -75,9 +111,7 @@ export default function createPlugin({
           }),
         "/tailwind/bootstrap.js": (req) =>
           new Response(
-            Bun.file(
-              join("node_modules", PackageJson.name, "dist", "bootstrap.js")
-            ).stream(),
+            Bun.file(join(import.meta.dir, "dist", "bootstrap.js")).stream(),
             {
               headers: {
                 "Content-Type": "application/javascript",
