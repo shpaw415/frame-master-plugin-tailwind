@@ -10,7 +10,7 @@ export type TailwindPluginProps = {
 
 declare global {
   var __BUN_TAILWIND_PLUGIN_CHILD_PROCESS__:
-    | Bun.Subprocess<"ignore", null, null>
+    | Bun.Subprocess<"ignore", null, "pipe">
     | undefined;
   var __SOCKETS_TAILWIND__: Bun.ServerWebSocket[];
 }
@@ -19,24 +19,37 @@ globalThis.__SOCKETS_TAILWIND__ ??= [];
 
 async function spawn(inputFile: string, outputFile: string) {
   const proc = Bun.spawn({
-    cmd: [
-      "bunx",
-      "@tailwindcss/cli",
-      "-i",
-      inputFile,
-      "-o",
-      outputFile,
-      "--watch",
-      "always",
-    ],
+    cmd:
+      process.env.NODE_ENV == "production"
+        ? [
+            "bunx",
+            "@tailwindcss/cli",
+            "-i",
+            inputFile,
+            "-o",
+            outputFile,
+            "--minify",
+          ]
+        : [
+            "bunx",
+            "@tailwindcss/cli",
+            "-i",
+            inputFile,
+            "-o",
+            outputFile,
+            "--watch",
+            "always",
+          ],
     stdin: "ignore",
     stdout: null,
     stderr: "pipe",
     onExit(proc, exitCode) {
+      if (exitCode == 0) return;
       console.error("Tailwind CSS process exited with code:", exitCode);
       exit(1);
     },
   });
+  globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = proc;
   const decoder = new TextDecoder();
   for await (const chunk of proc.stderr) {
     const str = decoder.decode(chunk);
@@ -45,21 +58,6 @@ async function spawn(inputFile: string, outputFile: string) {
     console.log("Make sure you have tailwindcss installed.");
   }
 }
-
-function spawnProduction(inputFile: string, outputFile: string) {
-  Bun.spawn({
-    cmd: [
-      "bunx",
-      "@tailwindcss/cli",
-      "-i",
-      inputFile,
-      "-o",
-      outputFile,
-      "--minify",
-    ],
-  });
-}
-
 /** This plugin add TailwindCss to your project and  */
 export default function createPlugin({
   inputFile,
@@ -69,12 +67,8 @@ export default function createPlugin({
     name: "tailwind-plugin",
     version: PackageJson.version,
     serverStart: {
-      dev_main() {
-        spawn(inputFile, outputFile);
-      },
       main() {
-        if (process.env.NODE_ENV == "production")
-          spawnProduction(inputFile, outputFile);
+        spawn(inputFile, outputFile);
       },
     },
     websocket: {
