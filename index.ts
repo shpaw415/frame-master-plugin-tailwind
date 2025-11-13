@@ -47,6 +47,9 @@ async function spawn(inputFile: string, outputFile: string) {
       if (exitCode == 0)
         return console.log("Tailwind CSS process exited normally.");
       console.error("Tailwind CSS process exited with code:", exitCode);
+      if (proc.stderr) {
+        new Response(proc.stderr).text().then(console.error);
+      }
       exit(1);
     },
   });
