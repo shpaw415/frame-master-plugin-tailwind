@@ -47,6 +47,10 @@ async function spawn(inputFile: string, outputFile: string) {
       if (exitCode == 0)
         return console.log("Tailwind CSS process exited normally.");
       console.error("Tailwind CSS process exited with code:", exitCode);
+      setTimeout(() => {
+        console.log("Exiting Frame Master due to Tailwind CSS failure.");
+        exit(1);
+      }, 1000);
     },
   });
   globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = proc;
