@@ -23,6 +23,7 @@ async function spawn(inputFile: string, outputFile: string) {
       process.env.NODE_ENV == "production"
         ? [
             "bunx",
+            "--bun",
             "@tailwindcss/cli",
             "-i",
             inputFile,
@@ -32,6 +33,7 @@ async function spawn(inputFile: string, outputFile: string) {
           ]
         : [
             "bunx",
+            "--bun",
             "@tailwindcss/cli",
             "-i",
             inputFile,
