@@ -23,6 +23,7 @@ async function spawn(inputFile: string, outputFile: string) {
       process.env.NODE_ENV == "production"
         ? [
             "bunx",
+            "--bun",
             "@tailwindcss/cli",
             "-i",
             inputFile,
@@ -32,6 +33,7 @@ async function spawn(inputFile: string, outputFile: string) {
           ]
         : [
             "bunx",
+            "--bun",
             "@tailwindcss/cli",
             "-i",
             inputFile,
@@ -47,7 +49,10 @@ async function spawn(inputFile: string, outputFile: string) {
       if (exitCode == 0)
         return console.log("Tailwind CSS process exited normally.");
       console.error("Tailwind CSS process exited with code:", exitCode);
-      exit(1);
+      setTimeout(() => {
+        console.log("Exiting Frame Master due to Tailwind CSS failure.");
+        exit(1);
+      }, 1000);
     },
   });
   globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = proc;
