@@ -18,6 +18,7 @@ declare global {
 globalThis.__SOCKETS_TAILWIND__ ??= [];
 
 async function spawn(inputFile: string, outputFile: string) {
+  let data: string[] = [];
   const proc = Bun.spawn({
     cmd:
       process.env.NODE_ENV == "production"
@@ -45,19 +46,30 @@ async function spawn(inputFile: string, outputFile: string) {
     stdin: "ignore",
     stdout: null,
     stderr: "pipe",
-    onExit(proc, exitCode) {
+    async onExit(proc, exitCode) {
       if (exitCode == 0)
         return console.log("Tailwind CSS process exited normally.");
       console.error("Tailwind CSS process exited with code:", exitCode);
       Bun.sleepSync(1000);
       console.log("Exiting Frame Master due to Tailwind CSS failure.");
+      console.log(
+        [
+          `\x1B[38;2;50;160;168m${"-".repeat(15)} TAILWINDCSS OUTPUT ` +
+            "-".repeat(15) +
+            "\x1B[38;2;255;255;255m",
+          ...data,
+          "\x1B[38;2;50;160;168m-".repeat(50),
+        ].join("\n")
+      );
       exit(1);
     },
   });
   globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = proc;
   const decoder = new TextDecoder();
   for await (const chunk of proc.stderr) {
-    const str = decoder.decode(chunk);
+    const str = decoder.decode(chunk).trim();
+    if (data.length > 20) data.shift();
+    if (str.length > 0) data.push(str);
     if (!str.includes("Error")) continue;
     console.error("Tailwind CSS Error:", str);
     console.log("Make sure you have tailwindcss installed.");
@@ -73,7 +85,8 @@ export default function createPlugin({
     version: PackageJson.version,
     serverStart: {
       main() {
-        spawn(inputFile, outputFile);
+        const proc = spawn(inputFile, outputFile);
+        if (process.env.NODE_ENV == "production") return proc;
       },
     },
     websocket: {
