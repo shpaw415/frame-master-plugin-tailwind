@@ -17,44 +17,36 @@ declare global {
 
 globalThis.__SOCKETS_TAILWIND__ ??= [];
 
-async function spawn(inputFile: string, outputFile: string) {
+async function watch(inputFile: string, outputFile: string) {
+  if (globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__) return;
   const proc = Bun.spawn({
-    cmd:
-      process.env.NODE_ENV == "production"
-        ? [
-            "bunx",
-            "--bun",
-            "@tailwindcss/cli",
-            "-i",
-            inputFile,
-            "-o",
-            outputFile,
-            "--minify",
-          ]
-        : [
-            "bunx",
-            "--bun",
-            "@tailwindcss/cli",
-            "-i",
-            inputFile,
-            "-o",
-            outputFile,
-            "--watch",
-            "always",
-          ],
+    cmd: [
+      "bunx",
+      "--bun",
+      "@tailwindcss/cli",
+      "-i",
+      inputFile,
+      "-o",
+      outputFile,
+      "--watch",
+      "always",
+    ],
     stdin: "ignore",
     stdout: null,
     stderr: "pipe",
-    onExit(proc, exitCode) {
-      if (exitCode == 0)
-        return console.log("Tailwind CSS process exited normally.");
-      console.error("Tailwind CSS process exited with code:", exitCode);
-      setTimeout(() => {
-        console.log("Exiting Frame Master due to Tailwind CSS failure.");
-        exit(1);
-      }, 1000);
+    onExit(_, exitCode) {
+      if (exitCode == 0) console.log("Tailwind CSS process exited normally.");
+      else {
+        console.error("Tailwind CSS process exited with code:", exitCode);
+        setTimeout(() => {
+          console.log("Exiting Frame Master due to Tailwind CSS failure.");
+          exit(1);
+        }, 1000);
+      }
+      globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = undefined;
     },
   });
+
   globalThis.__BUN_TAILWIND_PLUGIN_CHILD_PROCESS__ = proc;
   const decoder = new TextDecoder();
   for await (const chunk of proc.stderr) {
@@ -64,17 +56,39 @@ async function spawn(inputFile: string, outputFile: string) {
     console.log("Make sure you have tailwindcss installed.");
   }
 }
+
+function compile(inputFile: string, outputFile: string) {
+  Bun.spawnSync({
+    cmd: [
+      "bunx",
+      "--bun",
+      "@tailwindcss/cli",
+      "-i",
+      inputFile,
+      "-o",
+      outputFile,
+      "--minify",
+    ],
+  });
+}
+
 /** This plugin add TailwindCss to your project and  */
 export default function createPlugin({
   inputFile,
   outputFile,
 }: TailwindPluginProps): FrameMasterPlugin<any> {
   return {
-    name: "tailwind-plugin",
+    name: PackageJson.name,
     version: PackageJson.version,
+    requirement: {
+      frameMasterVersion: "^3.0.0",
+    },
+    createContext() {
+      return compile(inputFile, outputFile);
+    },
     serverStart: {
-      main() {
-        spawn(inputFile, outputFile);
+      dev_main() {
+        watch(inputFile, outputFile);
       },
     },
     websocket: {
