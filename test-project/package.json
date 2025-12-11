@@ -10,7 +10,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "frame-master": "^3.0.0",
+    "frame-master": "link:frame-master",
     "tailwindcss": "4.1.17",
     "@tailwindcss/cli": "4.1.17"
   },
