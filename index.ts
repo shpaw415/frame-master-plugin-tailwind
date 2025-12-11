@@ -1,11 +1,22 @@
 import { type FrameMasterPlugin } from "frame-master/plugin";
 import PackageJson from "./package.json";
-import path, { join } from "path";
+import { join } from "path";
+import { join as joinClient } from "frame-master/utils";
 import { exit } from "process";
+import { isProd } from "frame-master/utils";
+import { createHotFileWatcher } from "frame-master/server/hot-file-watcher";
 
 export type TailwindPluginProps = {
   inputFile: string;
   outputFile: string;
+  options?: {
+    /**
+     * Automatically inject Tailwind CSS into HTML files during build
+     * @info This won't work until Bun supports multiple files sharing the same output unless you use a single HTML entrypoint.
+     * @default false
+     */
+    autoInjectInBuild?: boolean;
+  };
 };
 
 declare global {
@@ -72,11 +83,56 @@ function compile(inputFile: string, outputFile: string) {
   });
 }
 
+// Plugin to inject Tailwind CSS into HTML files during build
+// NOTE: It won't work until Bun supports multiple file sharing the same output
+const injectInBuildPlugin: (outfile: string) => Bun.BunPlugin = (outfile) => ({
+  name: "tailwind-inject-build-plugin",
+  setup(build) {
+    const cwd = process.cwd();
+    const rewriter = new HTMLRewriter().on("head", {
+      element(element) {
+        element.append(
+          `<link href="/${joinClient(
+            outfile
+          )}" rel="stylesheet" id="__tailwindcss__">`,
+          {
+            html: true,
+          }
+        );
+      },
+    });
+    build.onLoad({ filter: /\.html$/ }, async (args) => {
+      return {
+        contents: rewriter.transform(
+          (args.__chainedContents as string) ??
+            (await Bun.file(args.path).text())
+        ) as string,
+        loader: "html",
+      };
+    });
+    build.onResolve({ filter: /randomize_tailwind\.css$/ }, (args) => {
+      return {
+        path: join(cwd, outfile),
+        namespace: "tailwindcss",
+      };
+    });
+    build.onLoad({ filter: /.*/, namespace: "tailwindcss" }, async (args) => {
+      return {
+        contents: args.__chainedContents ?? (await Bun.file(args.path).text()),
+        loader: "css",
+      };
+    });
+  },
+});
+
 /** This plugin add TailwindCss to your project and  */
 export default function createPlugin({
   inputFile,
   outputFile,
+  options = {},
 }: TailwindPluginProps): FrameMasterPlugin<any> {
+  const { autoInjectInBuild = false } = options;
+
   return {
     name: PackageJson.name,
     version: PackageJson.version,
@@ -87,7 +143,19 @@ export default function createPlugin({
       return compile(inputFile, outputFile);
     },
     serverStart: {
-      dev_main() {
+      async dev_main() {
+        createHotFileWatcher({
+          filePath: outputFile,
+          onReload() {
+            globalThis.__SOCKETS_TAILWIND__
+              .filter(
+                (w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind
+              )
+              .forEach((ws) => ws.send("reload"));
+          },
+          debounceDelay: 250,
+          name: "tailwind-output-watcher",
+        });
         watch(inputFile, outputFile);
       },
     },
@@ -157,12 +225,13 @@ export default function createPlugin({
         },
       },
     },
-    onFileSystemChange(eventType, filePath, absolutePath) {
-      if (absolutePath != outputFile) return;
-      globalThis.__SOCKETS_TAILWIND__
-        .filter((w) => (w?.data as unknown as { tailwind?: boolean })?.tailwind)
-        .forEach((ws) => ws.send("reload"));
+    build: {
+      buildConfig: {
+        plugins:
+          autoInjectInBuild && isProd()
+            ? [injectInBuildPlugin(outputFile)]
+            : [],
+      },
     },
-    fileSystemWatchDir: [join(...outputFile.split(path.sep).slice(0, -1))],
   };
 }

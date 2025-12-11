@@ -19,6 +19,7 @@
   "dependencies": {
     "@parcel/watcher": "^2.5.1",
     "@tailwindcss/cli": "4.1.15",
+    "frame-master-plugin-tailwind": ".",
     "tailwindcss": "4.1.15"
   }
 }

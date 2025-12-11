@@ -5,6 +5,7 @@
     "": {
       "name": "frame-master-plugin-tailwind",
       "dependencies": {
+        "frame-master-plugin-tailwind": ".",
         "@parcel/watcher": "^2.5.1",
         "@tailwindcss/cli": "4.1.15",
         "tailwindcss": "4.1.15",
@@ -14,7 +15,7 @@
       },
       "peerDependencies": {
         "frame-master": "^3.0.0",
-        "typescript": "^5",
+        "typescript": "^5.9.3",
       },
     },
   },
@@ -115,6 +116,8 @@
     "fill-range": ["fill-range@7.1.1", "", { "dependencies": { "to-regex-range": "^5.0.1" } }, "sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg=="],
 
     "frame-master": ["frame-master@3.0.0", "", { "dependencies": { "@shpaw415/webtoken": "^2.0.0", "chalk": "^5.6.2", "commander": "^14.0.2", "prompts": "^2.4.2", "react": "^19.0.0", "react-dom": "^19.0.0", "tar": "^7.5.2" }, "peerDependencies": { "typescript": "^5.9.3" }, "bin": { "frame-master": "bin/index.ts" } }, "sha512-cC6dHBzoNr9RxaP7wazkBD+nZYtlMD7RNUHQf6XRdeQylYMhxquBInR5zTA7tG9XJ/iUCCkzNP9f2ER30bgC5w=="],
+
+    "frame-master-plugin-tailwind": ["frame-master-plugin-tailwind@root:", {}],
 
     "graceful-fs": ["graceful-fs@4.2.11", "", {}, "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="],
 
