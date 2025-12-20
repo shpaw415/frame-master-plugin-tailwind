@@ -90,21 +90,24 @@ async function watch(inputFile: string, outputFile: string, runtime: Runtime) {
 }
 
 function compile(inputFile: string, outputFile: string, runtime: Runtime) {
-  if (
-    Bun.spawnSync({
-      cmd: [
-        runtime,
-        "@tailwindcss/cli",
-        "-i",
-        inputFile,
-        "-o",
-        outputFile,
-        "--minify",
-      ],
-      stdout: "inherit",
-      stderr: "inherit",
-    }).exitCode !== 0
-  ) {
+  const proc = Bun.spawnSync({
+    cmd: [
+      runtime,
+      "@tailwindcss/cli",
+      "-i",
+      inputFile,
+      "-o",
+      outputFile,
+      "--minify",
+    ],
+    stderr: "pipe",
+  });
+  if (proc.exitCode !== 0) {
+    const res = proc.stderr
+      ? new TextDecoder().decode(proc.stderr)
+      : "Unknown error";
+    console.error("Tailwind CSS compilation error:", res);
+
     console.error("Failed to compile Tailwind CSS. Exiting.");
     exit(1);
   }
