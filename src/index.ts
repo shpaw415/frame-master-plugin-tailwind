@@ -100,14 +100,10 @@ function compile(inputFile: string, outputFile: string, runtime: Runtime) {
       outputFile,
       "--minify",
     ],
-    stderr: "pipe",
+    stdout: "inherit",
+    stderr: "inherit",
   });
   if (proc.exitCode !== 0) {
-    const res = proc.stderr
-      ? new TextDecoder().decode(proc.stderr)
-      : "Unknown error";
-    console.error("Tailwind CSS compilation error:", res);
-
     console.error("Failed to compile Tailwind CSS. Exiting.");
     exit(1);
   }
