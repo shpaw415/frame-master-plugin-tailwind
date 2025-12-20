@@ -1,7 +1,6 @@
 {
   "name": "frame-master-plugin-tailwind",
-  "module": "index.ts",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest"
@@ -17,9 +16,12 @@
     "build-bootstrap": "bun build --target=browser --outfile=dist/bootstrap.js --minify bootstrap.ts"
   },
   "dependencies": {
-    "@parcel/watcher": "^2.5.1",
-    "@tailwindcss/cli": "4.1.15",
-    "frame-master-plugin-tailwind": ".",
-    "tailwindcss": "4.1.15"
+    "@tailwindcss/cli": "4.1.18",
+    "tailwindcss": "4.1.18",
+    "chalk": "^5.6.2"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./bootstrap": "./dist/bootstrap.js"
   }
 }

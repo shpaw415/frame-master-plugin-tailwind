@@ -1,5 +1,5 @@
 import type { FrameMasterConfig } from "frame-master/server/types";
-import TailwindPlugin from "..";
+import TailwindPlugin from "../src";
 import { isDev } from "frame-master/utils";
 
 const router = new Bun.FileSystemRouter({
@@ -24,7 +24,7 @@ const routes = Object.assign(
 
 export default {
   HTTPServer: {
-    port: 3000,
+    port: 3001,
     development: isDev(),
     routes,
   },
@@ -33,7 +33,7 @@ export default {
       inputFile: "static/tailwind.css",
       outputFile: "static/output.css",
       options: {
-        autoInjectInBuild: false,
+        autoInjectInBuild: true,
       },
     }),
     {
