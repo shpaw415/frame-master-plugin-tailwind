@@ -273,15 +273,11 @@ export default function createPlugin({
             );
           },
         }),
-        "/tailwind.css": (req) =>
-          new Response(Bun.file(outputFile), {
-            headers: {
-              "Content-Type": "text/css",
-            },
-          }),
         "/tailwind/bootstrap.js": (req) =>
           new Response(
-            Bun.file(join(import.meta.dir, "dist", "bootstrap.js")).stream(),
+            Bun.file(
+              join(import.meta.dir, "..", "dist", "bootstrap.js")
+            ).stream(),
             {
               headers: {
                 "Content-Type": "application/javascript",
@@ -296,7 +292,7 @@ export default function createPlugin({
           reWriter.on("head", {
             element(element) {
               element.append(
-                `<link href="/tailwind.css" rel="stylesheet" id="__tailwindcss__">`,
+                `<link href="/${outputFile}" rel="stylesheet" id="__tailwindcss__">`,
                 {
                   html: true,
                 }
