@@ -289,23 +289,30 @@ export default function createPlugin({
     router: {
       html_rewrite: {
         rewrite(reWriter) {
-          reWriter.on("head", {
-            element(element) {
-              element.append(
-                `<link href="/${outputFile}" rel="stylesheet" id="__tailwindcss__">`,
-                {
-                  html: true,
-                }
-              );
-              if (process.env.NODE_ENV != "production")
+          reWriter
+            .on("head", {
+              element(element) {
                 element.append(
-                  `<script src="/tailwind/bootstrap.js"></script>`,
+                  `<link href="/${outputFile}" rel="stylesheet" id="__tailwindcss__">`,
                   {
                     html: true,
                   }
                 );
-            },
-          });
+                if (process.env.NODE_ENV != "production")
+                  element.append(
+                    `<script src="/tailwind/bootstrap.js"></script>`,
+                    {
+                      html: true,
+                    }
+                  );
+              },
+            })
+            .on("#__tailwindcss__", {
+              element(element) {
+                // Remove any existing Tailwind CSS link to avoid duplicates
+                element.remove();
+              },
+            });
         },
       },
     },
