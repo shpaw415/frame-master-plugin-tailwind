@@ -46,7 +46,7 @@ async function watch(inputFile: string, outputFile: string, runtime: Runtime) {
   const proc = Bun.spawn({
     cmd: [
       runtime,
-      "@tailwindcss/cli",
+      "tailwindcss",
       "-i",
       inputFile,
       "-o",
