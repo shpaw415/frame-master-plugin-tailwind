@@ -283,6 +283,7 @@ export default function createPlugin({
               },
             }
           ),
+        "/tailwind.css": Bun.file(outputFile),
       },
     },
     router: {
