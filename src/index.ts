@@ -26,7 +26,7 @@ export type TailwindPluginProps = {
   };
 };
 
-type Runtime = "bunx" | "npx";
+type Runtime = "bun" | "npm";
 
 declare global {
   var __BUN_TAILWIND_PLUGIN_CHILD_PROCESS__:
@@ -46,7 +46,7 @@ async function watch(inputFile: string, outputFile: string, runtime: Runtime) {
   const proc = Bun.spawn({
     cmd: [
       runtime,
-      "@tailwindcss/cli",
+      "tailwindcss",
       "-i",
       inputFile,
       "-o",
@@ -93,7 +93,7 @@ function compile(inputFile: string, outputFile: string, runtime: Runtime) {
   const proc = Bun.spawnSync({
     cmd: [
       runtime,
-      "@tailwindcss/cli",
+      "tailwindcss",
       "-i",
       inputFile,
       "-o",
@@ -218,7 +218,7 @@ export default function createPlugin({
   outputFile,
   options = {},
 }: TailwindPluginProps): FrameMasterPlugin<any> {
-  const { autoInjectInBuild = true, runtime = "bunx" } = options;
+  const { autoInjectInBuild = true, runtime = "bun" } = options;
 
   return {
     name: PackageJson.name,
@@ -283,6 +283,7 @@ export default function createPlugin({
               },
             }
           ),
+        "/tailwind.css": Bun.file(outputFile),
       },
     },
     router: {
