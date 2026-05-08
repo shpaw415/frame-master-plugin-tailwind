@@ -5,15 +5,15 @@
     "": {
       "name": "frame-master-plugin-tailwind",
       "dependencies": {
-        "@tailwindcss/cli": "4.1.18",
         "chalk": "^5.6.2",
-        "tailwindcss": "4.1.18",
       },
       "devDependencies": {
         "@types/bun": "latest",
       },
       "peerDependencies": {
+        "@tailwindcss/cli": ">=4.1.18",
         "frame-master": "^3.0.0",
+        "tailwindcss": ">=4.1.18",
         "typescript": "^5.9.3",
       },
     },
