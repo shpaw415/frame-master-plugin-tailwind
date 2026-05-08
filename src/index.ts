@@ -221,7 +221,7 @@ export default function createPlugin({
 	inputFile,
 	outputFile,
 	options = {},
-}: TailwindPluginProps): FrameMasterPlugin<never> {
+}: TailwindPluginProps): FrameMasterPlugin {
 	const { autoInjectInBuild = true, runtime = "bun" } = options;
 
 	return {
