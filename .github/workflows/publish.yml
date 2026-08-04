@@ -1,0 +1,101 @@
+# Publish to npm when package.json version is new and this runs on main.
+name: Publish to npm
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+      - .github/workflows/publish.yml
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Publish even if the version already exists on npm (will fail if not allowed)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+  id-token: write # for npm provenance
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node (npm CLI + provenance)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build bootstrap client
+        run: bun run build-bootstrap
+
+      - name: Read package name and version
+        id: pkg
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Package: $NAME@$VERSION"
+
+      - name: Check if version is already on npm
+        id: check
+        run: |
+          NAME="${{ steps.pkg.outputs.name }}"
+          VERSION="${{ steps.pkg.outputs.version }}"
+          FORCE="${{ github.event.inputs.force || 'false' }}"
+
+          if npm view "${NAME}@${VERSION}" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${NAME}@${VERSION} is already published on npm."
+            if [ "$FORCE" = "true" ]; then
+              echo "Force requested — will attempt publish anyway."
+              echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${NAME}@${VERSION} is not on npm yet — will publish."
+          fi
+
+      - name: Run tests
+        if: steps.check.outputs.should_publish == 'true'
+        run: bun test
+
+      - name: Publish to npm
+        if: steps.check.outputs.should_publish == 'true'
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Skip notice
+        if: steps.check.outputs.should_publish != 'true'
+        run: |
+          echo "Skipping publish: ${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }} already exists on npm."
