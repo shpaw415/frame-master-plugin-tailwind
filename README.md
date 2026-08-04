@@ -119,6 +119,18 @@ bun run build-bootstrap
 bun run format   # Biome
 ```
 
+## Publishing
+
+Pushes to `main` that touch `package.json` run [`.github/workflows/publish.yml`](.github/workflows/publish.yml):
+
+1. Read `name` / `version` from `package.json`
+2. Skip if that version already exists on npm
+3. Otherwise run tests, build bootstrap, and `npm publish --access public --provenance`
+
+**One-time setup:** add a repo secret `NPM_TOKEN` (npm automation token with publish rights for the package).
+
+Manual re-run: Actions → **Publish to npm** → **Run workflow**.
+
 ## License
 
 MIT
