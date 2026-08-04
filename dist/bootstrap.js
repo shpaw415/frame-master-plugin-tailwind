@@ -1,6 +1,1 @@
-var e = new WebSocket("ws://" + location.host + "/ws/tailwind"),
-	s = document.getElementById("__tailwindcss__");
-e.addEventListener("message", (t) => {
-	if (t.data === "reload")
-		s?.setAttribute("href", "/tailwind.css?t=" + Date.now());
-});
+var m=500,i=null,q=!1;function A(){return`${location.protocol==="https:"?"wss:":"ws:"}//${location.host}/ws/tailwind`}function C(){let j=document.getElementById("__tailwindcss__");if(!j)return;j.setAttribute("href",`/tailwind.css?t=${Date.now()}`)}function z(){if(q)return;try{i=new WebSocket(A())}catch{x();return}i.addEventListener("open",()=>{m=500}),i.addEventListener("message",(j)=>{if(j.data==="reload")C()}),i.addEventListener("close",()=>{i=null,x()}),i.addEventListener("error",()=>{i?.close()})}function x(){if(q)return;let j=m;m=Math.min(m*2,1e4),setTimeout(z,j)}addEventListener("pagehide",()=>{q=!0,i?.close()});z();

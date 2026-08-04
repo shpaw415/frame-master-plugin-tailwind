@@ -1,1 +1,6 @@
 test-project
+test
+*.test.ts
+biome.json
+tsconfig.json
+bun.lock

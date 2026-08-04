@@ -1,27 +1,63 @@
 {
 	"name": "frame-master-plugin-tailwind",
-	"version": "1.1.4",
+	"version": "1.2.0",
+	"description": "Tailwind CSS integration for Frame-Master — compile, serve, optional HTML inject, and HMR.",
 	"type": "module",
-	"devDependencies": {
-		"@types/bun": "latest"
+	"license": "MIT",
+	"author": "shpaw415",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/shpaw415/frame-master-plugin-tailwind.git"
 	},
-	"peerDependencies": {
-		"typescript": "^5.9.3",
-		"frame-master": "^3.0.0",
-		"@tailwindcss/cli": ">=4.1.18",
-		"tailwindcss": ">=4.1.18"
+	"bugs": {
+		"url": "https://github.com/shpaw415/frame-master-plugin-tailwind/issues"
 	},
-	"trustedDependencies": [
-		"@parcel/watcher"
+	"homepage": "https://github.com/shpaw415/frame-master-plugin-tailwind#readme",
+	"keywords": [
+		"frame-master",
+		"plugin",
+		"tailwind",
+		"tailwindcss",
+		"css",
+		"hmr"
 	],
+	"files": [
+		"src",
+		"dist",
+		"bootstrap.ts",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": "./src/index.ts",
+		"./bootstrap": "./dist/bootstrap.js"
+	},
 	"scripts": {
-		"build-bootstrap": "bun build --target=browser --outfile=dist/bootstrap.js --minify bootstrap.ts"
+		"build-bootstrap": "bun build --target=browser --outfile=dist/bootstrap.js --minify bootstrap.ts",
+		"prepublishOnly": "bun run build-bootstrap",
+		"test": "bun test",
+		"typecheck": "tsc --noEmit",
+		"format": "biome check --write .",
+		"lint": "biome check ."
 	},
 	"dependencies": {
 		"chalk": "^5.6.2"
 	},
-	"exports": {
-		"./bootstrap": "./dist/bootstrap.js",
-		".": "./src/index.ts"
-	}
+	"peerDependencies": {
+		"@tailwindcss/cli": ">=4.1.18",
+		"frame-master": "^3.0.0",
+		"tailwindcss": ">=4.1.18",
+		"typescript": "^5.9.3"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.0",
+		"@tailwindcss/cli": ">=4.1.18",
+		"@types/bun": "latest",
+		"frame-master": "^3.1.1",
+		"tailwindcss": ">=4.1.18",
+		"typescript": "^5.9.3"
+	},
+	"trustedDependencies": [
+		"@parcel/watcher"
+	]
 }
