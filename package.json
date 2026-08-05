@@ -45,21 +45,18 @@
 	},
 	"peerDependencies": {
 		"@tailwindcss/cli": ">=4.1.18",
-		"frame-master": "^3.0.0",
+		"frame-master": "^3.2.0",
 		"tailwindcss": ">=4.1.18",
 		"typescript": "^5.9.3"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.2.0",
-		"@tailwindcss/cli": ">=4.1.18",
+		"@biomejs/biome": "^2.5.7",
+		"@tailwindcss/cli": "^4.3.3",
 		"@types/bun": "latest",
-		"frame-master": "^3.1.1",
-		"tailwindcss": ">=4.1.18",
+		"frame-master": "^3.2.0",
+		"tailwindcss": "^4.3.3",
 		"typescript": "^5.9.3"
 	},
-	"trustedDependencies": [
-		"@parcel/watcher"
-	],
 	"publishConfig": {
 		"access": "public"
 	}

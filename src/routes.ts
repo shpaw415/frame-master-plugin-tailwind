@@ -34,7 +34,10 @@ function jsHeaders(): HeadersInit {
  */
 export function createRoutes(
 	getOutputFile: () => string,
-): Record<string, unknown> {
+):
+	| Bun.Serve.Routes<undefined, string>
+	| Bun.Serve.RoutesWithUpgrade<undefined, string>
+	| undefined {
 	const bootstrapPath = join(import.meta.dir, "..", "dist", "bootstrap.js");
 
 	const routes: Record<string, unknown> = {
@@ -64,5 +67,8 @@ export function createRoutes(
 		};
 	}
 
-	return routes;
+	return routes as
+		| Bun.Serve.Routes<undefined, string>
+		| Bun.Serve.RoutesWithUpgrade<undefined, string>
+		| undefined;
 }
