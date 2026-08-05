@@ -121,13 +121,20 @@ bun run format   # Biome
 
 ## Publishing
 
-Pushes to `main` that touch `package.json` run [`.github/workflows/publish.yml`](.github/workflows/publish.yml):
+Pushes to `main` that touch `package.json` run [`.github/workflows/publish.yml`](.github/workflows/publish.yml) using **npm Trusted Publisher (OIDC)** — no `NPM_TOKEN` secret.
 
 1. Read `name` / `version` from `package.json`
 2. Skip if that version already exists on npm
-3. Otherwise run tests, build bootstrap, and `npm publish --access public --provenance`
+3. Otherwise run tests, build bootstrap, and `npm publish` via OIDC
 
-**One-time setup:** add a repo secret `NPM_TOKEN` (npm automation token with publish rights for the package).
+**One-time setup on [npmjs.com](https://www.npmjs.com):** package → **Settings** → **Trusted Publisher** → GitHub Actions:
+
+| Field | Value |
+|--------|--------|
+| Organization or user | `shpaw415` |
+| Repository | `frame-master-plugin-tailwind` |
+| Workflow filename | `publish.yml` |
+| Allowed actions | `npm publish` |
 
 Manual re-run: Actions → **Publish to npm** → **Run workflow**.
 
