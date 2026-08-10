@@ -8,11 +8,11 @@
         "chalk": "^5.6.2",
       },
       "devDependencies": {
-        "@biomejs/biome": "^2.2.0",
-        "@tailwindcss/cli": ">=4.1.18",
+        "@biomejs/biome": "^2.5.7",
+        "@tailwindcss/cli": "^4.3.3",
         "@types/bun": "latest",
-        "frame-master": "^3.1.1",
-        "tailwindcss": ">=4.1.18",
+        "frame-master": "^3.2.1",
+        "tailwindcss": "^4.3.3",
         "typescript": "^5.9.3",
       },
       "peerDependencies": {
@@ -23,9 +23,6 @@
       },
     },
   },
-  "trustedDependencies": [
-    "@parcel/watcher",
-  ],
   "packages": {
     "@biomejs/biome": ["@biomejs/biome@2.5.7", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "2.5.7", "@biomejs/cli-darwin-x64": "2.5.7", "@biomejs/cli-linux-arm64": "2.5.7", "@biomejs/cli-linux-arm64-musl": "2.5.7", "@biomejs/cli-linux-x64": "2.5.7", "@biomejs/cli-linux-x64-musl": "2.5.7", "@biomejs/cli-win32-arm64": "2.5.7", "@biomejs/cli-win32-x64": "2.5.7" }, "bin": { "biome": "bin/biome" } }, "sha512-zr8K/DcY5tYsQOQwqMJ0AWElo6QgmgNI7idXgXLhevVszlt8RGVpesEJPqx3ThazLaOwjJ5Y8fz3BtH5fGZNsw=="],
 
@@ -145,7 +142,7 @@
 
     "fill-range": ["fill-range@7.1.1", "", { "dependencies": { "to-regex-range": "^5.0.1" } }, "sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg=="],
 
-    "frame-master": ["frame-master@3.2.0", "", { "dependencies": { "@monaco-editor/react": "^4.7.0", "@shpaw415/webtoken": "^2.0.0", "chalk": "^5.6.2", "commander": "^14.0.3", "git": "^0.1.5", "lucide-react": "^1.14.0", "react": "^19.2.5", "react-dom": "^19.2.5", "tailwindcss": "^4.3.0", "tar": "^7.5.13" }, "peerDependencies": { "typescript": "^6.0.3" }, "bin": { "frame-master": "bin/index.ts" } }, "sha512-xmNdRtNeJqs/5+P+sVYbDl6goqvOr5qY3KXYIOfc1G/CU+82PgS/GyRwPjiyLZuMSNs+9E4gNyCzMTmSXWXKIg=="],
+    "frame-master": ["frame-master@3.2.1", "", { "dependencies": { "@monaco-editor/react": "^4.7.0", "@shpaw415/webtoken": "^2.0.0", "chalk": "^5.6.2", "commander": "^14.0.3", "git": "^0.1.5", "lucide-react": "^1.14.0", "react": "^19.2.5", "react-dom": "^19.2.5", "tailwindcss": "^4.3.0", "tar": "^7.5.13" }, "peerDependencies": { "typescript": "^6.0.3" }, "bin": { "frame-master": "bin/index.ts" } }, "sha512-8h3zZNxaN4+IUOJNGfTfTbEwbRnKC3Mi4pbJG3vUzVHVPrCNa1H0evk3pCjkKKTTXMBkD3kTSwpcI7gjTB5xIA=="],
 
     "git": ["git@0.1.5", "", { "dependencies": { "mime": "1.2.9" } }, "sha512-N+bfOrXyKMU/fQtCj6D/U9MQOEN0DAA8TLHSLdUQRSWBOkeRvsjJHdrdkvcq05xO7GSDKWc3nDEGoTZ4DfCCSg=="],
 
