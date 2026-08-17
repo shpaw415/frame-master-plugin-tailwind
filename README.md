@@ -1,6 +1,8 @@
 # frame-master-plugin-tailwind
 
-Tailwind CSS integration for [Frame-Master](https://github.com/shpaw415/frame-master): compile, serve, optional HTML injection, and live CSS reload.
+Tailwind CSS integration for [Frame-Master](https://github.com/shpaw415/frame-master) **v4**: compile, serve, optional HTML injection, and live CSS reload.
+
+Requires `frame-master@^4.0.0-0`. See [QUICK_EXEMPLE.md](./QUICK_EXEMPLE.md) and [CONFIG_EXEMPLE.md](./CONFIG_EXEMPLE.md).
 
 ## Features
 
@@ -107,7 +109,8 @@ The plugin prefers a local `@tailwindcss/cli` install when present.
 
 - **Dev:** watches `outputFile`, restarts the Tailwind CLI with backoff on crash, reconnecting HMR client (`ws` / `wss`).
 - **Prod compile:** throws a structured error on failure (does not hard-kill via `process.exit` alone through Frame-Master hooks).
-- **Config reload:** stops the file watcher and Tailwind child process cleanly.
+- **Config reload / dispose:** `serverStop` stops the file watcher and Tailwind child process (reload, test `dispose()`, SIGINT/SIGTERM).
+- **HMR bootstrap:** declared as the plugin-owned virtual module `@tailwind/bootstrap.js` (build-only; `injectRuntime: false`).
 - **WebSockets:** only connections upgraded with `{ tailwind: true }` are tracked.
 
 ## Scripts (contributors)

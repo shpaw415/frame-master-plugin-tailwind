@@ -1,6 +1,6 @@
 {
 	"name": "frame-master-plugin-tailwind",
-	"version": "1.2.0",
+	"version": "2.0.0",
 	"description": "Tailwind CSS integration for Frame-Master — compile, serve, optional HTML inject, and HMR.",
 	"type": "module",
 	"license": "MIT",
@@ -26,6 +26,8 @@
 		"dist",
 		"bootstrap.ts",
 		"README.md",
+		"QUICK_EXEMPLE.md",
+		"CONFIG_EXEMPLE.md",
 		"LICENSE"
 	],
 	"exports": {
@@ -35,7 +37,10 @@
 	"scripts": {
 		"build-bootstrap": "bun build --target=browser --outfile=dist/bootstrap.js --minify bootstrap.ts",
 		"prepublishOnly": "bun run build-bootstrap",
+		"pretest": "bun run build-bootstrap",
 		"test": "bun test",
+		"test:unit": "bun test test/config.test.ts test/inject.test.ts test/runtime.test.ts",
+		"test:integration": "bun test test/integration",
 		"typecheck": "tsc --noEmit",
 		"format": "biome check --write .",
 		"lint": "biome check ."
@@ -45,7 +50,7 @@
 	},
 	"peerDependencies": {
 		"@tailwindcss/cli": ">=4.1.18",
-		"frame-master": "^3.2.0",
+		"frame-master": "^4.0.0-0",
 		"tailwindcss": ">=4.1.18",
 		"typescript": "^5.9.3"
 	},
@@ -53,7 +58,7 @@
 		"@biomejs/biome": "^2.5.7",
 		"@tailwindcss/cli": "^4.3.3",
 		"@types/bun": "latest",
-		"frame-master": "^3.2.0",
+		"frame-master": "^4.0.0-0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^5.9.3"
 	},
