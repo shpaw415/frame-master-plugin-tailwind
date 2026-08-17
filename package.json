@@ -1,6 +1,6 @@
 {
 	"name": "frame-master-plugin-tailwind",
-	"version": "1.2.0",
+	"version": "2.0.0",
 	"description": "Tailwind CSS integration for Frame-Master — compile, serve, optional HTML inject, and HMR.",
 	"type": "module",
 	"license": "MIT",
@@ -26,6 +26,8 @@
 		"dist",
 		"bootstrap.ts",
 		"README.md",
+		"QUICK_EXEMPLE.md",
+		"CONFIG_EXEMPLE.md",
 		"LICENSE"
 	],
 	"exports": {
@@ -48,7 +50,7 @@
 	},
 	"peerDependencies": {
 		"@tailwindcss/cli": ">=4.1.18",
-		"frame-master": "^3.2.1",
+		"frame-master": "^4.0.0-0",
 		"tailwindcss": ">=4.1.18",
 		"typescript": "^5.9.3"
 	},
@@ -56,7 +58,7 @@
 		"@biomejs/biome": "^2.5.7",
 		"@tailwindcss/cli": "^4.3.3",
 		"@types/bun": "latest",
-		"frame-master": "^3.2.1",
+		"frame-master": "^4.0.0-0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^5.9.3"
 	},

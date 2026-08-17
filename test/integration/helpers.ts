@@ -135,25 +135,11 @@ export function wsUrl(baseUrl: string, path: string): string {
 	return baseUrl.replace(/^http/, "ws") + path;
 }
 
-/**
- * Stop plugin side-effects (Tailwind watch, file watchers, sockets) then server.
- * createPluginTestEnv.dispose() only stops the HTTP server.
- */
+/** Stop plugin side-effects via serverStop, then the HTTP server. */
 export async function disposeTailwindEnv(
 	env: PluginTestEnv | undefined,
 ): Promise<void> {
 	if (!env) return;
-	for (const plugin of env.pluginLoader.getPlugins()) {
-		const reload = (plugin as { onConfigReload?: () => void | Promise<void> })
-			.onConfigReload;
-		if (typeof reload === "function") {
-			try {
-				await reload.call(plugin);
-			} catch {
-				// best-effort cleanup
-			}
-		}
-	}
 	await env.dispose();
 }
 

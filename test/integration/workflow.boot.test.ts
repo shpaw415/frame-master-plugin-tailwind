@@ -1,5 +1,5 @@
 /**
- * Integration: Frame-Master 3.2.1 createPluginTestEnv — plugin boot + context.
+ * Integration: Frame-Master v4 createPluginTestEnv — plugin boot + context.
  */
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";

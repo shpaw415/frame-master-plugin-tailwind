@@ -125,7 +125,7 @@ export default function createPlugin(
 			},
 		},
 
-		async onConfigReload() {
+		async serverStop() {
 			await stopLifecycle();
 		},
 
@@ -159,6 +159,15 @@ export default function createPlugin(
 				}
 			: {}),
 
+		virtualModules: {
+			[BUILD_BOOTSTRAP_ALIAS]: {
+				contents: () =>
+					Bun.file(join(import.meta.dir, "..", "dist", "bootstrap.js")).text(),
+				loader: "js",
+				injectRuntime: false,
+			},
+		},
+
 		build: {
 			buildConfig: async () => {
 				const plugins: Bun.BunPlugin[] = [];
@@ -168,14 +177,7 @@ export default function createPlugin(
 				if (autoInjectInHtml && isDev()) {
 					plugins.push(createInjectBootstrapInBuildPlugin());
 				}
-				return {
-					files: {
-						[BUILD_BOOTSTRAP_ALIAS]: await Bun.file(
-							join(import.meta.dir, "..", "dist", "bootstrap.js"),
-						).text(),
-					},
-					plugins,
-				};
+				return { plugins };
 			},
 		},
 	};
