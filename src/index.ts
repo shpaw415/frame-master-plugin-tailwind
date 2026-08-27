@@ -126,8 +126,8 @@ export default function createPlugin(
 			},
 		},
 		fileSystemWatchDir: watchDirs,
-		onFileSystemChange(_eventType, filePath, ...rest: string[]) {
-			if (isCompiledCssChange(filePath, ...rest)) {
+		onFileSystemChange(_eventType, _fname, rootPath) {
+			if (rootPath === outputFile) {
 				broadcastCssReload();
 			}
 		},
