@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import type { FrameMasterPlugin } from "frame-master/plugin";
 import { isDev, isProd } from "frame-master/utils";
 import PackageJson from "../package.json";
@@ -24,7 +24,6 @@ import {
 	trackTailwindSocket,
 	untrackTailwindSocket,
 } from "./websocket";
-import { dirname } from "node:path";
 
 export {
 	PUBLIC_BOOTSTRAP_PATH,
