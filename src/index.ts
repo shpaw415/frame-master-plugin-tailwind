@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import type { FrameMasterPlugin } from "frame-master/plugin";
-import { createHotFileWatcher } from "frame-master/server/hot-file-watcher";
 import { isDev, isProd } from "frame-master/utils";
 import PackageJson from "../package.json";
 import {
@@ -25,6 +24,7 @@ import {
 	trackTailwindSocket,
 	untrackTailwindSocket,
 } from "./websocket";
+import { dirname } from "node:path";
 
 export {
 	PUBLIC_BOOTSTRAP_PATH,
@@ -63,17 +63,15 @@ export default function createPlugin(
 	let inputFile = inputFileProp;
 	let outputFile = outputFileProp;
 
-	let fileWatcher: Awaited<ReturnType<typeof createHotFileWatcher>> | null =
-		null;
 	let tailwindWatcher: TailwindWatcher | null = null;
 
 	async function stopLifecycle(): Promise<void> {
-		fileWatcher?.stop();
-		fileWatcher = null;
 		tailwindWatcher?.stop();
 		tailwindWatcher = null;
 		clearTailwindSockets();
 	}
+
+	const outPutDir = dirname(outputFile);
 
 	return {
 		name: PackageJson.name,
@@ -106,16 +104,6 @@ export default function createPlugin(
 		serverStart: {
 			async dev_main() {
 				await stopLifecycle();
-
-				fileWatcher = await createHotFileWatcher({
-					filePath: outputFile,
-					onReload() {
-						broadcastCssReload();
-					},
-					debounceDelay: 250,
-					name: "tailwind-output-watcher",
-				});
-
 				tailwindWatcher = createTailwindWatcher({
 					inputFile,
 					outputFile,
@@ -123,6 +111,12 @@ export default function createPlugin(
 				});
 				tailwindWatcher.start();
 			},
+		},
+		fileSystemWatchDir: [outPutDir],
+		onFileSystemChange(_ev, _fileName, rootPath) {
+			if (rootPath === outputFile) {
+				broadcastCssReload();
+			}
 		},
 
 		async serverStop() {
