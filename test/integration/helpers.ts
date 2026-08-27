@@ -1,5 +1,5 @@
 import { symlink } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import type { FrameMasterPlugin } from "frame-master/plugin/types";
 import {
 	createPluginTestEnv,
@@ -133,6 +133,25 @@ export async function waitFor(
 
 export function wsUrl(baseUrl: string, path: string): string {
 	return baseUrl.replace(/^http/, "ws") + path;
+}
+
+/**
+ * createPluginTestEnv does not start Frame-Master's fileSystemWatchDir
+ * watcher. Dispatch onFileSystemChange the same way production InitAll does.
+ */
+export async function dispatchOutputCssFileChange(
+	env: PluginTestEnv,
+	dir: string,
+	file = OUTPUT_CSS,
+): Promise<void> {
+	const fileName = basename(file);
+	const absolutePath = join(dir, file);
+	const hooks = env.pluginLoader.getPluginByName("onFileSystemChange");
+	await Promise.all(
+		hooks.map((h) =>
+			Promise.resolve(h.pluginParent("change", fileName, absolutePath)),
+		),
+	);
 }
 
 /** Stop plugin side-effects via serverStop, then the HTTP server. */

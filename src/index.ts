@@ -1,4 +1,4 @@
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import type { FrameMasterPlugin } from "frame-master/plugin";
 import { isDev, isProd } from "frame-master/utils";
 import PackageJson from "../package.json";
@@ -63,6 +63,7 @@ export default function createPlugin(
 	let outputFile = outputFileProp;
 
 	let tailwindWatcher: TailwindWatcher | null = null;
+	const watchDirs: string[] = [dirname(outputFileProp)];
 
 	async function stopLifecycle(): Promise<void> {
 		tailwindWatcher?.stop();
@@ -70,7 +71,19 @@ export default function createPlugin(
 		clearTailwindSockets();
 	}
 
-	const outPutDir = dirname(outputFile);
+	function isCompiledCssChange(
+		filePath: string,
+		projectRootPath?: string,
+		absolutePath?: string,
+	): boolean {
+		const target = basename(outputFile);
+		const hits = [filePath, projectRootPath, absolutePath].filter(
+			(p): p is string => typeof p === "string" && p.length > 0,
+		);
+		return hits.some(
+			(p) => p === outputFile || p === outputFileProp || basename(p) === target,
+		);
+	}
 
 	return {
 		name: PackageJson.name,
@@ -87,8 +100,9 @@ export default function createPlugin(
 			});
 			inputFile = resolved.inputFile;
 			outputFile = resolved.outputFile;
+			const outDir = dirname(outputFile);
+			watchDirs.splice(0, watchDirs.length, outDir);
 
-			// Production inject plugin was created with relative path; recompile uses absolute
 			compile(inputFile, outputFile, runtime);
 
 			return {
@@ -111,9 +125,9 @@ export default function createPlugin(
 				tailwindWatcher.start();
 			},
 		},
-		fileSystemWatchDir: [outPutDir],
-		onFileSystemChange(_ev, _fileName, rootPath) {
-			if (rootPath === outputFile) {
+		fileSystemWatchDir: watchDirs,
+		onFileSystemChange(_eventType, filePath, ...rest: string[]) {
+			if (isCompiledCssChange(filePath, ...rest)) {
 				broadcastCssReload();
 			}
 		},

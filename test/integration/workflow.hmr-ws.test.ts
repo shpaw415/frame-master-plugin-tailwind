@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { writeFixture } from "frame-master/testing";
 import { PUBLIC_CSS_PATH, PUBLIC_WS_PATH } from "../../src/constants";
 import {
+	dispatchOutputCssFileChange,
 	INPUT_CSS,
 	OUTPUT_CSS,
 	startTailwindEnv,
@@ -83,13 +84,29 @@ describe("integration: HMR websocket", () => {
 		});
 	}, 60_000);
 
+	test("watches the compiled CSS dir via fileSystemWatchDir", async () => {
+		await withTailwindFixture(async ({ dir, setEnv }) => {
+			await writeMinimalTailwindApp(dir);
+			const env = await startTailwindEnv({ dir });
+			setEnv(env);
+
+			const dirs = env.pluginLoader
+				.getPluginByName("fileSystemWatchDir")
+				.flatMap((p) => p.pluginParent);
+			expect(
+				dirs.some((d) => d.endsWith("static") || d.includes("static")),
+			).toBe(true);
+			expect(
+				env.pluginLoader.getPluginByName("onFileSystemChange").length,
+			).toBeGreaterThan(0);
+		});
+	}, 60_000);
+
 	test("output CSS change broadcasts reload to connected clients", async () => {
 		await withTailwindFixture(async ({ dir, setEnv }) => {
 			await writeMinimalTailwindApp(dir);
 			const env = await startTailwindEnv({ dir });
 			setEnv(env);
-			// Let hot-file-watcher + tailwind watch settle
-			await Bun.sleep(800);
 
 			expect(env.baseUrl).toBeTruthy();
 			const base = env.baseUrl as string;
@@ -104,6 +121,7 @@ describe("integration: HMR websocket", () => {
 						outPath,
 						`${current}\n/* hmr-ping ${Date.now()} */\n`,
 					);
+					await dispatchOutputCssFileChange(env, dir);
 				},
 			});
 
@@ -126,7 +144,6 @@ describe("integration: HMR websocket", () => {
 
 			const env = await startTailwindEnv({ dir });
 			setEnv(env);
-			// Tailwind --watch + output hot-file-watcher need a moment
 			await Bun.sleep(1_200);
 
 			expect(env.baseUrl).toBeTruthy();
@@ -137,7 +154,6 @@ describe("integration: HMR websocket", () => {
 			const beforeCss = await Bun.file(outPath).text();
 			expect(beforeCss).not.toContain(marker);
 
-			// Full DX path: edit stylesheet in dev → watch rewrite output → WS reload
 			const message = await waitForWsMessage(url, {
 				timeoutMs: 45_000,
 				onOpen: async () => {
@@ -146,22 +162,22 @@ describe("integration: HMR websocket", () => {
 						inputPath,
 						`${input}\n/* ${marker} */\n.dx-dev-reload { color: #ef4444; outline: 1px solid #${marker.slice(-6).padStart(6, "0")}; }\n`,
 					);
+					await waitFor(
+						async () => {
+							const css = await Bun.file(outPath).text();
+							return css.includes("dx-dev-reload") || css.includes(marker);
+						},
+						{
+							label: "compiled CSS to include edited style",
+							timeoutMs: 30_000,
+							intervalMs: 100,
+						},
+					);
+					await dispatchOutputCssFileChange(env, dir);
 				},
 			});
 
 			expect(message).toBe("reload");
-
-			await waitFor(
-				async () => {
-					const css = await Bun.file(outPath).text();
-					return css.includes("dx-dev-reload") || css.includes(marker);
-				},
-				{
-					label: "compiled CSS to include edited style",
-					timeoutMs: 10_000,
-					intervalMs: 100,
-				},
-			);
 
 			const served = await (await env.fetch(PUBLIC_CSS_PATH)).text();
 			expect(served).toMatch(/dx-dev-reload|#ef4444|color:\s*#ef4444/i);
@@ -193,38 +209,36 @@ describe("integration: HMR websocket", () => {
 			const message = await waitForWsMessage(url, {
 				timeoutMs: 45_000,
 				onOpen: async () => {
-					// Simulate editing a template class list in dev
 					await writeFixture(
 						dir,
 						"src/index.html",
 						`<!DOCTYPE html><html><body><p class="text-blue-600 underline decoration-wavy">B</p></body></html>\n`,
 					);
-					// Nudge input so Tailwind watch always re-evaluates content
 					const input = await Bun.file(inputPath).text();
 					await Bun.write(
 						inputPath,
 						`${input}\n/* utility-nudge ${Date.now()} */\n`,
 					);
+					await waitFor(
+						async () => {
+							const css = await Bun.file(outPath).text();
+							return (
+								css.includes("underline") ||
+								css.includes("decoration-wavy") ||
+								css.includes("text-decoration")
+							);
+						},
+						{
+							label: "watch rebuild to emit new utilities after style edit",
+							timeoutMs: 30_000,
+							intervalMs: 200,
+						},
+					);
+					await dispatchOutputCssFileChange(env, dir);
 				},
 			});
 
 			expect(message).toBe("reload");
-
-			await waitFor(
-				async () => {
-					const css = await Bun.file(outPath).text();
-					return (
-						css.includes("underline") ||
-						css.includes("decoration-wavy") ||
-						css.includes("text-decoration")
-					);
-				},
-				{
-					label: "watch rebuild to emit new utilities after style edit",
-					timeoutMs: 15_000,
-					intervalMs: 200,
-				},
-			);
 
 			const served = await (await env.fetch(PUBLIC_CSS_PATH)).text();
 			expect(served.length).toBeGreaterThan(50);
